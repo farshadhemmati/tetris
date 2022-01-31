@@ -20,12 +20,12 @@ export class ColData {
 export class HomeComponent implements OnInit {
 
     public visibleGrid: ColData[][] = [];
-    public height = 20;
-    private width = 10;
+    public height = 20; //height of the tetris board
+    private width = 10; //width of the tetris board
 
-    public maxBlockHeight = 0;
+    public maxBlockHeight = 0;  //as the blocks come down, it calculates what the height of all the pieces together are
 
-    public showInput = false;
+    public showInput = false;   //show the input dialog
 
     public input = (`Q0
     Q0,Q1
@@ -48,13 +48,13 @@ export class HomeComponent implements OnInit {
     S0,S2,S4,S5,Q8,Q8,Q8,Q8,T1,Q1,I0,Q4
     L0,J3,L5,J8,T1,T6,S2,Z5,T0,T7
     Q0,I2,I6,I0,I6,I6,Q2,Q4 
-    `).split('\n').map(x => x.trim());
+    `).split('\n').map(x => x.trim());      //initial input (user can change this through a textarea)
 
-    public getInput = '';
+    public getInput = '';                   //textarea binding
 
-    public currentResult = -1;
+    public currentResult = -1;              //which result is currently clicked on by the user and animated (so we can highlight it's number)
 
-    private tetrixBlocks = {
+    private tetrisBlocks = {                //definition of the tetris blocks (L shape, Z shape, Square, Line)
         Q: [[1, 1], [1, 1]],
         Z: [[1, 1, 0], [0, 1, 1]],
         S: [[0, 1, 1], [1, 1, 0]],
@@ -87,7 +87,7 @@ export class HomeComponent implements OnInit {
             definition = definition.substring(0, definition.length - 1);
         }
 
-
+        //split it so we can iterate through the puzzle pieces as they come down
         var operations = definition.split(',');
 
         this.findOptimalRowHeight(operations);
@@ -98,7 +98,7 @@ export class HomeComponent implements OnInit {
 
         for (let opNum = 0; opNum < operations.length; opNum++) {
             //get the piece configuration
-            var piece = this.tetrixBlocks[operations[opNum][0]];
+            var piece = this.tetrisBlocks[operations[opNum][0]];
             var colStart = parseInt(operations[opNum][1]);
 
             var rowLanded = 0;
@@ -150,7 +150,7 @@ export class HomeComponent implements OnInit {
         this.height = 3; //start with buffer of 3 on the top
 
         for (let i = 0; i < operations.length; i++) {
-            let piece: [][] = this.tetrixBlocks[operations[i][0]];
+            let piece: [][] = this.tetrisBlocks[operations[i][0]];
             this.height += piece.length;
         }
 
