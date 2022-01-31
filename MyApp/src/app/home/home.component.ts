@@ -184,10 +184,14 @@ export class HomeComponent implements OnInit {
 
     async checkRowComplete(piece, row) {
         //Check if line is complete to remove it (and add a new row to top)
+
+        //stop angular from refreshing the view
         this.ref.detach();
         var eraseCount = 0;
+
         for (let r = row + piece.length - 1; r >= row; r--) {
             let erase = true;
+            //check if all the columns in this row are full
             for (let c = 0; c < this.width; c++) {
                 if (!this.visibleGrid[r][c].filled) {
                     erase = false;
@@ -203,23 +207,27 @@ export class HomeComponent implements OnInit {
                 this.ref.detectChanges();
                 await this.sleep(500);
 
+                //remove the row that is full
                 this.visibleGrid.splice(r, 1);
+                //add a new row to the top of the matrix so we keep the height of the matrix consistent
                 this.visibleGrid.unshift(new Array());
+                //initialize the columns of the new row we added to the matrix
                 for (let j = 0; j < this.width; j++) {
                     this.visibleGrid[0][j] = { filled: false, color: '#FFF' };
                 }
                 eraseCount++;
-                r++; //go back a row to check
+                r++; //go back a row to check (when we deleted this row, it needs to check if the row after it which is now a number less has also been completed)
             }
         }
 
         this.maxBlockHeight -= eraseCount;
 
-        
+        //allow angular to check states again
         this.ref.reattach();
 
     }
 
+    //Resets the board with the new height (and if new row need to be added, then add them and initialize them)
     resetBoard() {
         console.log('resetBoard start');
         if (this.visibleGrid.length > this.height) {
