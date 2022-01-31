@@ -7,7 +7,7 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
 import { routes } from './app.module';
-import { HomeComponent } from './home';
+import { HomeComponent } from './home/home.component';
 import { JsonServiceClient } from '@servicestack/client';
 
 describe('AppComponent', () => {

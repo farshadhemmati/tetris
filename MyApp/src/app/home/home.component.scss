@@ -1,0 +1,17 @@
+﻿.tetris {
+    display: grid;
+    justify-content: center;
+    .tetrisRow {
+        line-height: 8px;
+        .tetrisBox {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 4px;
+            border: 1px solid #c1c1c1;
+        
+        }
+    
+    }
+    
+}

@@ -1,0 +1,15 @@
+﻿<div class="container" style="margin-bottom: 100px">
+
+    <div class="tetris">
+        <div *ngFor="let row of visibleGrid" class="tetrisRow">
+
+            <span class="tetrisBox" *ngFor="let col of row" [style.backgroundColor]="col.filled ? 'black' : 'white'"></span>
+    
+    
+    
+        </div>
+    
+    </div>
+    
+
+</div>
