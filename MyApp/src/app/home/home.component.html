@@ -1,15 +1,37 @@
-﻿<div class="container" style="margin-bottom: 100px">
+﻿<div class="container" style="margin-bottom: 100px;">
+  <div class="row">
+    <div class="col-12 col-md-4">
+      <div *ngIf="!showInput">
+        <div class="headerTitle">Max Block Height</div>
+        <div style="font-size: 40px; font-weight: 700; margin: 20px 0 30px 0;">{{maxBlockHeight}}</div>
 
-    <div class="tetris">
-        <div *ngFor="let row of visibleGrid" class="tetrisRow">
+        <div class="headerTitle">Test cases</div>
+        <button mat-flat-button color="primary" class="uploadTestCases" (click)="showInput = true">Upload New Cases</button>
 
-            <span class="tetrisBox" *ngFor="let col of row" [style.backgroundColor]="col.filled ? 'black' : 'white'"></span>
-    
-    
-    
+        <ng-container *ngFor="let testCase of input; let i = index">
+          <div *ngIf="testCase && testCase.length > 0" class="testCaseRow">
+            <span class="lineNumber">{{i + 1}}</span><a (click)="this.showResult(testCase)" class="testCase">{{testCase | removeComma}}</a>
+          </div>
+        </ng-container>
+      </div>
+
+      <!--Input Screen-->
+      <div *ngIf="showInput">
+        <div>
+          <textarea style="width: 100%; height: 600px;" [(ngModel)]="getInput"> </textarea>
         </div>
-    
+        <button mat-flat-button color="primary" (click)="submitInput()" class="uploadTestCases">Use Cases</button>
+        <button mat-flat-button class="uploadTestCases" (click)="showInput = false">Cancel</button>
+      </div>
     </div>
-    
-
+    <div class="col-12 col-md-8 mt-3">
+      <div class="tetris">
+        <div class="tetris-container">
+          <div *ngFor="let row of visibleGrid" class="tetrisRow">
+            <span class="tetrisBox" *ngFor="let col of row" [style.backgroundColor]="col.filled ? col.color : 'white'"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

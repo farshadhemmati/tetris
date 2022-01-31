@@ -8,6 +8,9 @@ import { ServiceStackModule, ForbiddenComponent } from '@servicestack/angular';
 
 import { AppComponent } from './app.component';
 import { HomeComponent } from './home/home.component';
+import { RemoveCommaPipe } from './shared/pipes/removeComma.pipe';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import {MatButtonModule} from '@angular/material/button';
 
 export const routes: NgRoutes = [
   {
@@ -23,13 +26,19 @@ export const routes: NgRoutes = [
   declarations: [
     AppComponent,
     HomeComponent,
+    RemoveCommaPipe,
   ],
   imports: [
     BrowserModule,
     FormsModule,
     HttpClientModule,
     ServiceStackModule,
-    RouterModule.forRoot(routes)
+    MatButtonModule,
+
+    RouterModule.forRoot(routes),
+
+
+    BrowserAnimationsModule
   ],
   providers: [{provide: JsonServiceClient, useValue: new JsonServiceClient('/')}],
   bootstrap: [AppComponent]

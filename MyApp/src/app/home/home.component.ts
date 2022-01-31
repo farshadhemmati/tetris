@@ -1,11 +1,11 @@
 ﻿
-import { Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { IAuthSession } from '@servicestack/client';
 import { StoreService } from '../shared/store';
 
 
-export var PieceColor = ['#FFFFFF', 'blue', 'red', 'green']
+export var PieceColor = ['#FFFFFF', '#C0392B', '#2980B9', '#FF007F', '#F1C40F', '#8E44AD', '#34495E', '#E74C3C', '#7F8C8D', '#BB8FCE', '#A04000', '#ABEBC6', '#F1948A', '#0E6655' ]
 export class ColData {
     public filled: boolean = false;
     public color: string = PieceColor[0];
@@ -23,7 +23,12 @@ export class HomeComponent implements OnInit {
     private height = 20;
     private width = 10;
 
-    private input = `Q0
+    public maxBlockHeight = 0;
+
+    public showInput = false;
+    public getInput = '';
+
+    public input = (`Q0
     Q0,Q1
     Q0,Q2,Q4,Q6,Q8
     Q0,Q2,Q4,Q6,Q8,Q1
@@ -44,7 +49,7 @@ export class HomeComponent implements OnInit {
     S0,S2,S4,S5,Q8,Q8,Q8,Q8,T1,Q1,I0,Q4
     L0,J3,L5,J8,T1,T6,S2,Z5,T0,T7
     Q0,I2,I6,I0,I6,I6,Q2,Q4 
-    `
+    `).split('\n').map(x => x.trim());
 
     private tetrixBlocks = {
         Q: [[1, 1], [1, 1]],
@@ -56,91 +61,111 @@ export class HomeComponent implements OnInit {
         J: [[0, 1], [0, 1], [1, 1]]
     }
 
-    constructor() {
+    constructor(private ref: ChangeDetectorRef) {
         //initialize 2D array (matrix) for the tetrix board        
-        this.resetBoard()
-
-        this.showResult("I0,I4,Q8");
-    }
-
-
-    ngOnInit() {
+        this.resetBoard();
 
     }
 
-    showResult(definition: string) {
+
+    async ngOnInit() {
+        //await this.showResult("S0,S2,S4,S5,Q8,Q8,Q8,Q8,T1,Q1,I0,Q4");
+    }
+
+    async showResult(definition: string) {
+        definition = definition.trim();
         var operations = definition.split(',');
-        
+
         this.findOptimalRowHeight(operations);
 
         this.resetBoard();
 
-        
+
 
         for (let opNum = 0; opNum < operations.length; opNum++) {
             //get the piece configuration
             var piece = this.tetrixBlocks[operations[opNum][0]];
             var colStart = parseInt(operations[opNum][1]);
 
-            var pieceLanded = false;
-            
-            for (let row = 0; row < this.visibleGrid.length - piece.length; row++) {
-                for (let y = 0; y < piece.length; y++) //go through the piece width
+            var rowLanded = 0;
+
+            for (let row = 0; row <= this.visibleGrid.length - piece.length; row++) {
+                let canGoDown = true;
+                //erase previous row when drawing
+                //we must do this before we keep going
+                if (row > 0) {
+                    await this.drawPiece(piece, row - 1, colStart, opNum, false);
+                }
+
+                for (let y = 0; y < piece.length; y++) //go through the piece height
                 {
-                    for (let x = 0; x < piece[0].length; x++) //go through the piece height
+                    for (let x = 0; x < piece[0].length; x++) //go through the piece width
                     {
-                        if (row > 0) {
-                            this.drawPiece(piece, row - 1, colStart, opNum, false);
-                        }
-
-                        if (this.visibleGrid[row + y][colStart + x].filled) {
-                            //put the piece 1 position above where it isn't working
-                            this.drawPiece(piece, row - 1, colStart, opNum, true);
-
-                            pieceLanded = true;
+                        if (piece[y][x] == 1 && this.visibleGrid[row + y][colStart + x].filled) {
+                            canGoDown = false; 
                             break;
                         }
-                        
                     }
-
-                    if (pieceLanded) {
+                    if (!canGoDown) {
                         break;
                     }
                 }
+
+                if (canGoDown) {                   
+                    await this.drawPiece(piece, row, colStart, opNum, true);
+                    rowLanded = row;
+                }
+                else {
+                    await this.drawPiece(piece, row - 1, colStart, opNum, true);
+                    rowLanded = row - 1;
+                    break;
+                }
+
             }
-            if (!pieceLanded) {
-                //it should land at the most bottom row
-                this.drawPiece(piece, this.visibleGrid.length - piece.length, colStart, opNum, true);
-            }
+
+            this.maxBlockHeight = Math.max(this.height - rowLanded, this.maxBlockHeight);
+            await this.checkRowComplete(piece, rowLanded);
+
         }
     }
 
     findOptimalRowHeight(operations: string[]) {
         this.height = 3; //start with buffer of 3 on the top
 
-        for (let i = 0; i < operations.length; i++) {            
+        for (let i = 0; i < operations.length; i++) {
             let piece: [][] = this.tetrixBlocks[operations[i][0]];
-            this.height += piece.length;  
+            this.height += piece.length;
         }
 
         console.log('new height', this.height)
     }
 
-    drawPiece(piece: [][], row: number, colStart: number, opNum, filled) {
-        console.log('drawPiece start');
-        
-        console.log(row, colStart, opNum)
+    async drawPiece(piece: [][], row: number, colStart: number, opNum, filled) {
+
+        //console.log(row, colStart, opNum)
         for (let y = 0; y < piece.length; y++) { //row
             for (let x = 0; x < piece[0].length; x++) { //column
                 if (piece[y][x] === 1) {
                     this.visibleGrid[row + y][colStart + x] = { filled: filled, color: PieceColor[opNum + 1] }
                 }
-        
-            
             }
         }
 
+
+
+        if (filled) {
+            this.ref.markForCheck();
+            await this.sleep(40);
+        }
+
+
+    }
+
+    private sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay));
+
+    async checkRowComplete(piece, row) {
         //Check if line is complete to remove it (and add a new row to top)
+        this.ref.detach();
         var eraseCount = 0;
         for (let r = row + piece.length - 1; r >= row; r--) {
             let erase = true;
@@ -149,21 +174,30 @@ export class HomeComponent implements OnInit {
                     erase = false;
                 }
             }
+
+
             if (erase) {
+                //Make it red first
+                for (let c = 0; c < this.width; c++) {
+                    this.visibleGrid[r][c].color = '#E74C3C';
+                }
+                this.ref.detectChanges();
+                await this.sleep(500);
+
                 this.visibleGrid.splice(r, 1);
+                this.visibleGrid.unshift(new Array());
+                for (let j = 0; j < this.width; j++) {
+                    this.visibleGrid[0][j] = { filled: false, color: PieceColor[0] };
+                }
                 eraseCount++;
-            }
-        }
-        //re-add the rows you erased to the top
-        for (let a = 0; a < eraseCount; a++) {
-            this.visibleGrid.unshift(new Array());
-            for (let j = 0; j < this.width; j++) {
-                this.visibleGrid[0][j] = { filled: false, color: PieceColor[0] };
+                r++; //go back a row to check
             }
         }
 
+        this.maxBlockHeight -= eraseCount;
 
-        console.log('drawPiece end');
+        
+        this.ref.reattach();
 
     }
 
@@ -184,7 +218,14 @@ export class HomeComponent implements OnInit {
         }
         console.log('resetBoard finished');
 
+        this.maxBlockHeight = 0;
 
+
+    }
+
+    submitInput() {
+        this.input = this.getInput.split('\n').map(x => x.trim());
+        this.showInput = false;
     }
 
 }

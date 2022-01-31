@@ -1,17 +1,71 @@
-﻿.tetris {
-    display: grid;
-    justify-content: center;
-    .tetrisRow {
-        line-height: 8px;
-        .tetrisBox {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            border-radius: 4px;
-            border: 1px solid #c1c1c1;
+﻿.headerTitle {
+  font-weight: 700;
+  padding: 5px 9px;
+  border: 1px solid #df2127;
+  border-radius: 10px;
+  color: #df2127;
+  margin-bottom: 10px;
+}
+
+.uploadTestCases {
+ 
+  margin: 5px 0 10px 0;
+
+}
+
+.testCaseRow {
+  margin-bottom: 5px;
+  overflow: auto;
+
+  .lineNumber {
+    float: left;
+  
+    border-radius: 10px;
+    padding: 5px 9px;
+    background-color: #df2127;
+    color: #fff;
+    margin-right: 5px;
+    min-width: 20px;
+    font-size: 14px;
+  }
+  .testCase {       
+    
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: 700;
+    z-index: 999;
         
-        }
-    
+
+    &:hover {
+      text-decoration: underline;
     }
-    
+  }
+
+  &:after {
+    content: "";
+    clear: both;
+    display: table;
+  }
+}
+
+.tetris {
+  display: grid;
+  justify-content: center;
+  .tetris-container {
+    background-color: white;
+    z-index: 1000;
+
+    .tetrisRow {
+      line-height: 18px;
+      .tetrisBox {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border-radius: 5px;
+        border: 1px solid #c1c1c1;
+      }
+    }
+  }
 }
