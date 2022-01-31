@@ -6,11 +6,11 @@
         <div style="font-size: 40px; font-weight: 700; margin: 20px 0 30px 0;">{{maxBlockHeight}}</div>
 
         <div class="headerTitle">Test cases</div>
-        <button mat-flat-button color="primary" class="uploadTestCases" (click)="showInput = true">Upload New Cases</button>
+        <button mat-flat-button color="primary" class="uploadTestCases"  [disabled]="showingResult" (click)="showInputWindow()">Upload New Cases</button>
 
         <ng-container *ngFor="let testCase of input; let i = index">
           <div *ngIf="testCase && testCase.length > 0" class="testCaseRow">
-            <span class="lineNumber">{{i + 1}}</span><a (click)="this.showResult(testCase)" class="testCase">{{testCase | removeComma}}</a>
+            <span class="lineNumber" [class.selected]="i == currentResult">{{i + 1}}</span><button mat-button [disabled]="showingResult" (click)="currentResult = i; this.showResult(testCase)" class="testCase">{{testCase | removeComma}}</button>
           </div>
         </ng-container>
       </div>
@@ -27,8 +27,8 @@
     <div class="col-12 col-md-8 mt-3">
       <div class="tetris">
         <div class="tetris-container">
-          <div *ngFor="let row of visibleGrid" class="tetrisRow">
-            <span class="tetrisBox" *ngFor="let col of row" [style.backgroundColor]="col.filled ? col.color : 'white'"></span>
+          <div *ngFor="let row of visibleGrid" class="tetrisRow" [class.large]="height > 50">
+            <span class="tetrisBox" [class.large]="height > 50" *ngFor="let col of row" [style.backgroundColor]="col.filled ? col.color : 'white'"></span>
           </div>
         </div>
       </div>

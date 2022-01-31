@@ -5,7 +5,7 @@ import { IAuthSession } from '@servicestack/client';
 import { StoreService } from '../shared/store';
 
 
-export var PieceColor = ['#FFFFFF', '#C0392B', '#2980B9', '#FF007F', '#F1C40F', '#8E44AD', '#34495E', '#E74C3C', '#7F8C8D', '#BB8FCE', '#A04000', '#ABEBC6', '#F1948A', '#0E6655' ]
+export var PieceColor = ['#C0392B', '#2980B9', '#FF007F', '#F1C40F', '#8E44AD', '#34495E', '#E74C3C', '#7F8C8D', '#BB8FCE', '#A04000', '#ABEBC6', '#F1948A', '#0E6655' ]
 export class ColData {
     public filled: boolean = false;
     public color: string = PieceColor[0];
@@ -20,13 +20,12 @@ export class ColData {
 export class HomeComponent implements OnInit {
 
     public visibleGrid: ColData[][] = [];
-    private height = 20;
+    public height = 20;
     private width = 10;
 
     public maxBlockHeight = 0;
 
     public showInput = false;
-    public getInput = '';
 
     public input = (`Q0
     Q0,Q1
@@ -51,6 +50,10 @@ export class HomeComponent implements OnInit {
     Q0,I2,I6,I0,I6,I6,Q2,Q4 
     `).split('\n').map(x => x.trim());
 
+    public getInput = '';
+
+    public currentResult = -1;
+
     private tetrixBlocks = {
         Q: [[1, 1], [1, 1]],
         Z: [[1, 1, 0], [0, 1, 1]],
@@ -60,6 +63,9 @@ export class HomeComponent implements OnInit {
         L: [[1, 0], [1, 0], [1, 1]],
         J: [[0, 1], [0, 1], [1, 1]]
     }
+
+
+    showingResult: boolean = false; //if true, it disables the interface so they can't click on multiple things at once;
 
     constructor(private ref: ChangeDetectorRef) {
         //initialize 2D array (matrix) for the tetrix board        
@@ -73,7 +79,15 @@ export class HomeComponent implements OnInit {
     }
 
     async showResult(definition: string) {
+        this.showingResult = true;
+        
         definition = definition.trim();
+        //remove any trailing comma
+        while (definition.endsWith(',')) {
+            definition = definition.substring(0, definition.length - 1);
+        }
+
+
         var operations = definition.split(',');
 
         this.findOptimalRowHeight(operations);
@@ -127,6 +141,9 @@ export class HomeComponent implements OnInit {
             await this.checkRowComplete(piece, rowLanded);
 
         }
+
+        this.showingResult = false;
+        this.currentResult = -1;
     }
 
     findOptimalRowHeight(operations: string[]) {
@@ -137,6 +154,8 @@ export class HomeComponent implements OnInit {
             this.height += piece.length;
         }
 
+        this.height = Math.min(100, this.height);
+
         console.log('new height', this.height)
     }
 
@@ -146,7 +165,7 @@ export class HomeComponent implements OnInit {
         for (let y = 0; y < piece.length; y++) { //row
             for (let x = 0; x < piece[0].length; x++) { //column
                 if (piece[y][x] === 1) {
-                    this.visibleGrid[row + y][colStart + x] = { filled: filled, color: PieceColor[opNum + 1] }
+                    this.visibleGrid[row + y][colStart + x] = { filled: filled, color: PieceColor[(opNum) % (PieceColor.length - 1)] }
                 }
             }
         }
@@ -155,7 +174,7 @@ export class HomeComponent implements OnInit {
 
         if (filled) {
             this.ref.markForCheck();
-            await this.sleep(40);
+            await this.sleep(this.height < 50 ? 40 : 15);
         }
 
 
@@ -187,7 +206,7 @@ export class HomeComponent implements OnInit {
                 this.visibleGrid.splice(r, 1);
                 this.visibleGrid.unshift(new Array());
                 for (let j = 0; j < this.width; j++) {
-                    this.visibleGrid[0][j] = { filled: false, color: PieceColor[0] };
+                    this.visibleGrid[0][j] = { filled: false, color: '#FFF' };
                 }
                 eraseCount++;
                 r++; //go back a row to check
@@ -213,7 +232,7 @@ export class HomeComponent implements OnInit {
                 this.visibleGrid.push(new Array());
 
             for (let j = 0; j < this.width; j++) {
-                this.visibleGrid[i][j] = { filled: false, color: PieceColor[0] };
+                this.visibleGrid[i][j] = { filled: false, color: '#FFF' };
             }
         }
         console.log('resetBoard finished');
@@ -223,8 +242,13 @@ export class HomeComponent implements OnInit {
 
     }
 
+    showInputWindow() {
+        this.getInput = this.input.join('\n');
+        this.showInput = true;
+    }
+
     submitInput() {
-        this.input = this.getInput.split('\n').map(x => x.trim());
+        this.input = this.getInput.split('\n').map(x => x.trim().trim());
         this.showInput = false;
     }
 
